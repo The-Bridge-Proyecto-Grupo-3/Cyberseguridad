@@ -1,12 +1,71 @@
-# React + Vite
+# 🛡️ Servidor de Auditoría Técnica y Seguridad
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este servidor Ubuntu está diseñado como un entorno centralizado para la **auditoría continua de seguridad**, integrando herramientas de análisis de dependencias, escaneo de vulnerabilidades y trazabilidad normativa.  
+Su objetivo es automatizar la detección temprana de riesgos y facilitar la generación de informes alineados con estándares como **ISO/IEC 27001**, **OWASP** y **RGPD/LOPDGDD**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ⚙️ Funciones principales
 
-## Expanding the ESLint configuration
+- **Generación de SBOMs (Software Bill of Materials)**  
+  - Uso de **Syft** para catalogar dependencias y componentes del código fuente.
+  - Exportación en formato **CycloneDX** para compatibilidad con herramientas de análisis.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Gestión y análisis de dependencias**  
+  - Integración con **Dependency-Track** para:
+    - Almacenamiento histórico de SBOMs.
+    - Detección de vulnerabilidades (CVEs) en tiempo real.
+    - Seguimiento de cambios y trazabilidad técnica.
+
+- **Automatización de auditorías**  
+  - Script Bash (`enviar_sbom.sh`) que:
+    - Actualiza el repositorio (`git pull`).
+    - Genera el SBOM con Syft.
+    - Envía el SBOM a Dependency-Track mediante su API REST.
+  - Ejecución programada diaria mediante **cron**.
+
+- **Control de versiones y sincronización de código**  
+  - Clonación y actualización automática del repositorio GitHub del proyecto.
+  - Integración directa con la carpeta de trabajo del servidor.
+
+---
+
+
+
+---
+
+## 🔄 Flujo de trabajo
+
+1. **Actualización del código**  
+   El servidor ejecuta `git pull` para obtener la última versión del repositorio.
+
+2. **Generación del SBOM**  
+   Syft analiza el código y produce un archivo CycloneDX JSON.
+
+3. **Envío a Dependency-Track**  
+   El SBOM se envía a la API REST (`/api/v1/bom`) usando el UUID del proyecto y la API Key.
+
+4. **Análisis y trazabilidad**  
+   Dependency-Track procesa el SBOM, detecta vulnerabilidades y actualiza el historial del proyecto.
+
+5. **Automatización**  
+   Cron ejecuta el script diariamente a las 10:00, dejando constancia en `sbom.log`.
+
+---
+
+## 📊 Beneficios
+
+- Auditoría continua y automatizada.
+- Centralización de resultados y trazabilidad.
+- Integración con estándares de seguridad y cumplimiento normativo.
+- Reducción de riesgos mediante detección temprana de vulnerabilidades.
+
+---
+
+## 🛠️ Herramientas integradas
+
+- **Syft** – Generación de SBOMs.
+- **Dependency-Track** – Gestión y análisis de dependencias.
+- **Git** – Control de versiones y sincronización.
+- **Cron** – Automatización de tareas periódicas.
+
