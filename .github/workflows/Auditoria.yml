@@ -26,17 +26,4 @@ jobs:
           npx eslint . --format json --output-file auditoria/informes/eslint_report.json || true
 
       # Instalar Semgrep
-      - name: Instalar Semgrep
-        run: pip install semgrep
-
-      # Ejecutar Semgrep
-      - name: Ejecutar Semgrep
-        run: |
-          semgrep --config auto --json > auditoria/informes/semgrep_report.json || true
-
-      # Subir informes como artefactos
-      - name: Subir informes
-        uses: actions/upload-artifact@v4
-        with:
-          name: auditoria-informes
-          path: auditoria/informes/
+      - name: Inst
