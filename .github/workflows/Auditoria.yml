@@ -15,20 +15,21 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      # Instalar dependencias para ESLint
-      - name: Instalar dependencias
-        run: npm install
+      # Instalar ESLint globalmente (sin package.json)
+      - name: Instalar ESLint
+        run: npm install -g eslint eslint-plugin-security eslint-plugin-node eslint-plugin-promise
 
       # Ejecutar ESLint
       - name: Ejecutar ESLint
         run: |
           mkdir -p auditoria/informes
-          npx eslint . --format json --output-file auditoria/informes/eslint_report.json
+          eslint . --format json --output-file auditoria/informes/eslint_report.json
 
-      # Ejecutar Semgrep
+      # Instalar Semgrep
       - name: Instalar Semgrep
         run: pip install semgrep
 
+      # Ejecutar Semgrep
       - name: Ejecutar Semgrep
         run: |
           semgrep --config auto --json > auditoria/informes/semgrep_report.json
