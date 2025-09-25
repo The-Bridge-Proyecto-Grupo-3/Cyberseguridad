@@ -19,7 +19,7 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      # Ejecutar ESLint con config moderna (eslint.config.js)
+      # Ejecutar ESLint con config moderna (eslint.config.js en la raíz del repo)
       - name: Ejecutar ESLint
         run: |
           mkdir -p auditoria/informes
@@ -34,12 +34,13 @@ jobs:
         run: |
           semgrep --config auto --json > auditoria/informes/semgrep_report.json || true
 
-      # Instalar Gitleaks (binario oficial)
+      # Instalar Gitleaks (binario oficial correcto)
       - name: Instalar Gitleaks
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
-          chmod +x gitleaks
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_linux_x64.tar.gz -o gitleaks.tar.gz
+          tar -xvzf gitleaks.tar.gz
           sudo mv gitleaks /usr/local/bin/
+          gitleaks version
 
       # Ejecutar Gitleaks (detección de secretos en el código actual)
       - name: Ejecutar Gitleaks
