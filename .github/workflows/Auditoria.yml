@@ -34,11 +34,12 @@ jobs:
         run: |
           semgrep --config auto --json > auditoria/informes/semgrep_report.json || true
 
-      # Instalar Gitleaks (paquete .deb oficial)
+      # Instalar Gitleaks (binario oficial con versión fija)
       - name: Instalar Gitleaks
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_linux_amd64.deb -o gitleaks.deb
-          sudo dpkg -i gitleaks.deb || sudo apt-get install -f -y
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz -o gitleaks.tar.gz
+          tar -xvzf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/
           gitleaks version
 
       # Ejecutar Gitleaks (detección de secretos en el código actual)
