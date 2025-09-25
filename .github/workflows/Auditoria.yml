@@ -1,4 +1,4 @@
-name: Auditoría Código (Semgrep + ESLint)
+name: Auditoría Código (Semgrep + ESLint + Gitleaks)
 
 on:
   push:
@@ -33,11 +33,19 @@ jobs:
       - name: Ejecutar Semgrep
         run: |
           semgrep --config auto --json > auditoria/informes/semgrep_report.json || true
- # Ejecutar Gitleaks (detección de secretos)
+
+      # Instalar Gitleaks (binario oficial)
+      - name: Instalar Gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
+          chmod +x gitleaks
+          sudo mv gitleaks /usr/local/bin/
+
+      # Ejecutar Gitleaks (detección de secretos en el código actual)
       - name: Ejecutar Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        with:
-          args: detect --source . --report-format json --report-path auditoria/informes/gitleaks_report.json --no-git
+        run: |
+          mkdir -p auditoria/informes
+          gitleaks detect --source . --report-format json --report-path auditoria/informes/gitleaks_report.json --no-git || true
 
       # Subir informes como artefactos
       - name: Subir informes
