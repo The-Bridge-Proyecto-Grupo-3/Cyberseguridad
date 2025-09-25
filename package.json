@@ -1,0 +1,27 @@
+{
+  "name": "cyberseguridad",
+  "version": "1.0.0",
+  "description": "Este servidor Ubuntu está diseñado como un entorno centralizado para la **auditoría continua de seguridad**, integrando herramientas de análisis de dependencias, escaneo de vulnerabilidades y trazabilidad normativa.   Su objetivo es automatizar la detección temprana de riesgos y facilitar la generación de informes alineados con estándares como **ISO/IEC 27001**, **OWASP** y **RGPD/LOPDGDD**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/The-Bridge-Proyecto-Grupo-3/Cyberseguridad.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/The-Bridge-Proyecto-Grupo-3/Cyberseguridad/issues"
+  },
+  "homepage": "https://github.com/The-Bridge-Proyecto-Grupo-3/Cyberseguridad#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "eslint": "^9.36.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-security": "^3.0.1"
+  }
+}
