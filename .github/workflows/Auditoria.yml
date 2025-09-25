@@ -1,10 +1,12 @@
 name: Auditoría Código (Semgrep + ESLint)
 
 on:
-  push:
-    branches: [ cyber ]
-  pull_request:
-    branches: [ cyber ]
+  push:        # Se ejecuta en cualquier push
+    branches:  # En todas las ramas
+      - '**'
+  pull_request:  # También en cualquier PR
+    branches:
+      - '**'
 
 jobs:
   auditoria:
@@ -37,4 +39,3 @@ jobs:
         with:
           name: auditoria-informes
           path: auditoria/informes/
-
