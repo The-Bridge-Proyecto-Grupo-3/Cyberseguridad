@@ -15,15 +15,28 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      # Instalar dependencias locales definidas en package.json
-      - name: Instalar dependencias Node
-        run: npm install
+      # Instalar ESLint y plugins directamente
+      - name: Instalar ESLint
+        run: npm install -g eslint @eslint/js eslint-plugin-security eslint-plugin-node eslint-plugin-promise
 
       # Ejecutar ESLint con config moderna (eslint.config.js en la raíz del repo)
       - name: Ejecutar ESLint
         run: |
           mkdir -p auditoria/informes
-          npx eslint . --format json --output-file auditoria/informes/eslint_report.json || true
+          NODE_PATH=$(npm root -g) npx eslint . --format json --output-file auditoria/informes/eslint_report.json || true
 
       # Instalar Semgrep
-      - name: Inst
+      - name: Instalar Semgrep
+        run: pip install semgrep
+
+      # Ejecutar Semgrep
+      - name: Ejecutar Semgrep
+        run: |
+          semgrep --config auto --json > auditoria/informes/semgrep_report.json || true
+
+      # Subir informes como artefactos
+      - name: Subir informes
+        uses: actions/upload-artifact@v4
+        with:
+          name: auditoria-informes
+          path: auditoria/informes/
