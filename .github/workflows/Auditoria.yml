@@ -15,11 +15,11 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      # Instalar ESLint globalmente (sin package.json)
+      # Instalar ESLint globalmente con todos los plugins necesarios
       - name: Instalar ESLint
         run: npm install -g eslint @eslint/js eslint-plugin-security eslint-plugin-node eslint-plugin-promise
 
-      # Ejecutar ESLint con config moderna (eslint.config.js)
+      # Ejecutar ESLint con la configuración moderna (eslint.config.js en la raíz del repo)
       - name: Ejecutar ESLint
         run: |
           mkdir -p auditoria/informes
