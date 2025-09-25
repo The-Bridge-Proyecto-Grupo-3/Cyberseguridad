@@ -1,10 +1,10 @@
 name: Auditoría Código (Semgrep + ESLint)
 
 on:
-  push:        # Se ejecuta en cualquier push
-    branches:  # En todas las ramas
+  push:
+    branches:
       - '**'
-  pull_request:  # También en cualquier PR
+  pull_request:
     branches:
       - '**'
 
@@ -15,15 +15,15 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      # Instalar dependencias locales (usa package.json del repo)
-      - name: Instalar dependencias Node
-        run: npm install
+      # Instalar ESLint y plugins directamente
+      - name: Instalar ESLint
+        run: npm install -g eslint @eslint/js eslint-plugin-security eslint-plugin-node eslint-plugin-promise
 
       # Ejecutar ESLint con config moderna (eslint.config.js en la raíz del repo)
       - name: Ejecutar ESLint
         run: |
           mkdir -p auditoria/informes
-          npx eslint . --format json --output-file auditoria/informes/eslint_report.json || true
+          NODE_PATH=$(npm root -g) npx eslint . --format json --output-file auditoria/informes/eslint_report.json || true
 
       # Instalar Semgrep
       - name: Instalar Semgrep
@@ -34,7 +34,7 @@ jobs:
         run: |
           semgrep --config auto --json > auditoria/informes/semgrep_report.json || true
 
-      # Subir informes como artefactos (v4 actualizado)
+      # Subir informes como artefactos
       - name: Subir informes
         uses: actions/upload-artifact@v4
         with:
