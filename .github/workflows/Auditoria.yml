@@ -1,0 +1,40 @@
+name: Auditoría Código (Semgrep + ESLint)
+
+on:
+  push:
+    branches: [ cyber ]
+  pull_request:
+    branches: [ cyber ]
+
+jobs:
+  auditoria:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      # Instalar dependencias para ESLint
+      - name: Instalar dependencias
+        run: npm install
+
+      # Ejecutar ESLint
+      - name: Ejecutar ESLint
+        run: |
+          mkdir -p auditoria/informes
+          npx eslint . --format json --output-file auditoria/informes/eslint_report.json
+
+      # Ejecutar Semgrep
+      - name: Instalar Semgrep
+        run: pip install semgrep
+
+      - name: Ejecutar Semgrep
+        run: |
+          semgrep --config auto --json > auditoria/informes/semgrep_report.json
+
+      # Subir informes como artefactos
+      - name: Subir informes
+        uses: actions/upload-artifact@v3
+        with:
+          name: auditoria-informes
+          path: auditoria/informes/
+
