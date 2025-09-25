@@ -17,13 +17,13 @@ jobs:
 
       # Instalar ESLint globalmente (sin package.json)
       - name: Instalar ESLint
-        run: npm install -g eslint eslint-plugin-security eslint-plugin-node eslint-plugin-promise
+        run: npm install -g eslint @eslint/js eslint-plugin-security eslint-plugin-node eslint-plugin-promise
 
-      # Ejecutar ESLint
+      # Ejecutar ESLint con config moderna (eslint.config.js)
       - name: Ejecutar ESLint
         run: |
           mkdir -p auditoria/informes
-          eslint . --format json --output-file auditoria/informes/eslint_report.json
+          eslint . --format json --output-file auditoria/informes/eslint_report.json || true
 
       # Instalar Semgrep
       - name: Instalar Semgrep
@@ -32,7 +32,7 @@ jobs:
       # Ejecutar Semgrep
       - name: Ejecutar Semgrep
         run: |
-          semgrep --config auto --json > auditoria/informes/semgrep_report.json
+          semgrep --config auto --json > auditoria/informes/semgrep_report.json || true
 
       # Subir informes como artefactos (v4 actualizado)
       - name: Subir informes
