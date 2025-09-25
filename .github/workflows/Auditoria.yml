@@ -15,15 +15,15 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      # Instalar ESLint globalmente con todos los plugins necesarios
-      - name: Instalar ESLint
-        run: npm install -g eslint @eslint/js eslint-plugin-security eslint-plugin-node eslint-plugin-promise
+      # Instalar dependencias locales (usa package.json del repo)
+      - name: Instalar dependencias Node
+        run: npm install
 
-      # Ejecutar ESLint con la configuración moderna (eslint.config.js en la raíz del repo)
+      # Ejecutar ESLint con config moderna (eslint.config.js en la raíz del repo)
       - name: Ejecutar ESLint
         run: |
           mkdir -p auditoria/informes
-          eslint . --format json --output-file auditoria/informes/eslint_report.json || true
+          npx eslint . --format json --output-file auditoria/informes/eslint_report.json || true
 
       # Instalar Semgrep
       - name: Instalar Semgrep
