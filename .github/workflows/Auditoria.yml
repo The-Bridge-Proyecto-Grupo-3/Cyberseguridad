@@ -33,9 +33,9 @@ jobs:
         run: |
           semgrep --config auto --json > auditoria/informes/semgrep_report.json
 
-      # Subir informes como artefactos
+      # Subir informes como artefactos (v4 actualizado)
       - name: Subir informes
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: auditoria-informes
           path: auditoria/informes/
