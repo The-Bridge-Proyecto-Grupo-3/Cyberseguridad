@@ -54,3 +54,19 @@ jobs:
         with:
           name: auditoria-informes
           path: auditoria/informes/
+      # Subir el informe a mi servidor usando clave ssh    
+      - name: Configurar clave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 192.168.1.149 >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Subir informes al servidor
+        run: |
+          scp eslint_report.json server@192.168.1.149:/var/log/auditoria/eslint_report.json
+          scp semgrep_report.json server@192.168.1.149:/var/log/auditoria/semgrep_report.json
+          scp gitleaks_report.json server@192.168.1.149:/var/log/auditoria/gitleaks_report.json
+
