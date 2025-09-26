@@ -1,3 +1,4 @@
+
 name: Auditoría Código (Semgrep + ESLint + Gitleaks)
 
 on:
