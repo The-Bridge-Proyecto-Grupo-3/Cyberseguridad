@@ -108,3 +108,16 @@ Cyberseguridad/
 - Integrar análisis de dependencias con **Trivy**.
 - Añadir dashboards preconfigurados en Grafana para cada tipo de informe.
 
+# Estructura detallada del servidor 
+https://copilot.microsoft.com/th/id/BCO.b4fad127-c773-4877-b718-1aabf06eab50.png<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/0a1ee981-a618-42ea-8174-f787ccb116e5" />
+
+En el diagrama se muestra cómo:
+GitHub Actions genera los informes JSON (ESLint, Semgrep, Gitleaks, SBOMs).
+  Estos llegan al servidor de auditoría, donde Promtail los recoge.
+  Loki los almacena y Grafana los visualiza en dashboards.
+
+Todo el servidor está protegido por:
+  NordVPN → capa de red segura y cifrada.
+  Suricata → IDS/IPS para detectar intrusiones y tráfico sospechoso.
+  UFW → firewall que controla accesos y puertos.
+
