@@ -1,0 +1,113 @@
+name: Auditoría Código (Semgrep + ESLint + Gitleaks + SBOMs)
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+permissions:
+  contents: write   # necesario para poder hacer commit/push
+
+jobs:
+  auditoria:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo de ciberseguridad
+        uses: actions/checkout@v3
+
+      - name: Preparar carpetas
+        run: mkdir -p auditoria/informes sbom
+
+      # Dependencias Node (para ESLint)
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Instalar Semgrep
+      - name: Instalar Semgrep
+        run: pip install semgrep
+
+      # Instalar Gitleaks
+      - name: Instalar Gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz -o gitleaks.tar.gz
+          tar -xvzf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/
+          gitleaks version
+
+      # Instalar Syft (para SBOMs)
+      - name: Instalar Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      # --- Auditoría Cyberseguridad ---
+      - name: ESLint Cyberseguridad
+        run: npx eslint . --format json --output-file auditoria/informes/eslint_cyber.json || true
+
+      - name: Semgrep Cyberseguridad
+        run: semgrep --config auto --json > auditoria/informes/semgrep_cyber.json || true
+
+      - name: Gitleaks Cyberseguridad
+        run: gitleaks detect --source . --report-format json --report-path auditoria/informes/gitleaks_cyber.json --no-git || true
+
+      - name: SBOM Cyberseguridad
+        run: syft . -o cyclonedx-json > auditoria/informes/sbom_cyber.json
+
+      # --- FS-Backend ---
+      - name: Clonar FS-Backend
+        run: git clone https://github.com/The-Bridge-Proyecto-Grupo-3/FS-Backend.git
+
+      - name: ESLint FS-Backend
+        run: npx eslint FS-Backend --format json --output-file auditoria/informes/eslint_fs_backend.json || true
+
+      - name: Semgrep FS-Backend
+        run: semgrep --config auto FS-Backend --json > auditoria/informes/semgrep_fs_backend.json || true
+
+      - name: Gitleaks FS-Backend
+        run: gitleaks detect --source FS-Backend --report-format json --report-path auditoria/informes/gitleaks_fs_backend.json --no-git || true
+
+      - name: SBOM FS-Backend
+        run: syft FS-Backend -o cyclonedx-json > auditoria/informes/sbom_fs_backend.json
+
+      # --- FS-Frontend ---
+      - name: Clonar FS-Frontend
+        run: git clone https://github.com/The-Bridge-Proyecto-Grupo-3/FS-Frontend.git
+
+      - name: ESLint FS-Frontend
+        run: npx eslint FS-Frontend --format json --output-file auditoria/informes/eslint_fs_frontend.json || true
+
+      - name: Semgrep FS-Frontend
+        run: semgrep --config auto FS-Frontend --json > auditoria/informes/semgrep_fs_frontend.json || true
+
+      - name: Gitleaks FS-Frontend
+        run: gitleaks detect --source FS-Frontend --report-format json --report-path auditoria/informes/gitleaks_fs_frontend.json --no-git || true
+
+      - name: SBOM FS-Frontend
+        run: syft FS-Frontend -o cyclonedx-json > auditoria/informes/sbom_fs_frontend.json
+
+      # --- Data Science ---
+      - name: Clonar Data Science
+        run: git clone https://github.com/The-Bridge-Proyecto-Grupo-3/data_science_group.git
+
+      - name: Semgrep Data
+        run: semgrep --config auto data_science_group --json > auditoria/informes/semgrep_data.json || true
+
+      - name: Gitleaks Data
+        run: gitleaks detect --source data_science_group --report-format json --report-path auditoria/informes/gitleaks_data.json --no-git || true
+
+      - name: SBOM Data
+        run: syft data_science_group -o cyclonedx-json > auditoria/informes/sbom_data.json
+
+      # --- Guardar informes en carpeta sbom del repo ---
+      - name: Mover informes a carpeta sbom
+        run: cp auditoria/informes/*.json sbom/
+
+      - name: Commit y push de informes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add sbom/*.json
+          git commit -m "chore: añadir informes de auditoría en sbom [skip ci]" || echo "No hay cambios que commitear"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
