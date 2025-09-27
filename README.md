@@ -1,71 +1,110 @@
-# 🛡️ Servidor de Auditoría Técnica y Seguridad
+# 🛡️ Proyecto de Auditoría y Seguridad Automatizada
 
-Este servidor Ubuntu está diseñado como un entorno centralizado para la **auditoría continua de seguridad**, integrando herramientas de análisis de dependencias, escaneo de vulnerabilidades y trazabilidad normativa.  
-Su objetivo es automatizar la detección temprana de riesgos y facilitar la generación de informes alineados con estándares como **ISO/IEC 27001**, **OWASP** y **RGPD/LOPDGDD**.
-
----
-
-## ⚙️ Funciones principales
-
-- **Generación de SBOMs (Software Bill of Materials)**  
-  - Uso de **Syft** para catalogar dependencias y componentes del código fuente.
-  - Exportación en formato **CycloneDX** para compatibilidad con herramientas de análisis.
-
-- **Gestión y análisis de dependencias**  
-  - Integración con **Dependency-Track** para:
-    - Almacenamiento histórico de SBOMs.
-    - Detección de vulnerabilidades (CVEs) en tiempo real.
-    - Seguimiento de cambios y trazabilidad técnica.
-
-- **Automatización de auditorías**  
-  - Script Bash (`enviar_sbom.sh`) que:
-    - Actualiza el repositorio (`git pull`).
-    - Genera el SBOM con Syft.
-    - Envía el SBOM a Dependency-Track mediante su API REST.
-  - Ejecución programada diaria mediante **cron**.
-
-- **Control de versiones y sincronización de código**  
-  - Clonación y actualización automática del repositorio GitHub del proyecto.
-  - Integración directa con la carpeta de trabajo del servidor.
+Este repositorio centraliza la **auditoría de código y generación de SBOMs** de varios proyectos del grupo, integrando herramientas de análisis estático, detección de secretos y trazabilidad de dependencias.  
+El objetivo es disponer de un **pipeline CI/CD robusto** que garantice seguridad, cumplimiento normativo y visibilidad completa de riesgos.
 
 ---
 
+## 🚀 Funcionalidades principales
 
+### 🔍 Auditorías de código
+- **ESLint**: análisis de calidad y estilo en proyectos Node.js/JavaScript.
+- **Semgrep**: reglas de seguridad y patrones de vulnerabilidades en múltiples lenguajes.
+- **Gitleaks**: detección de secretos expuestos en el código (tokens, claves, contraseñas).
 
----
-
-## 🔄 Flujo de trabajo
-
-1. **Actualización del código**  
-   El servidor ejecuta `git pull` para obtener la última versión del repositorio.
-
-2. **Generación del SBOM**  
-   Syft analiza el código y produce un archivo CycloneDX JSON.
-
-3. **Envío a Dependency-Track**  
-   El SBOM se envía a la API REST (`/api/v1/bom`) usando el UUID del proyecto y la API Key.
-
-4. **Análisis y trazabilidad**  
-   Dependency-Track procesa el SBOM, detecta vulnerabilidades y actualiza el historial del proyecto.
-
-5. **Automatización**  
-   Cron ejecuta el script diariamente a las 10:00, dejando constancia en `sbom.log`.
+Cada herramienta genera un informe en formato **JSON**, versionado en la carpeta [`sbom/`](./sbom).
 
 ---
 
-## 📊 Beneficios
-
-- Auditoría continua y automatizada.
-- Centralización de resultados y trazabilidad.
-- Integración con estándares de seguridad y cumplimiento normativo.
-- Reducción de riesgos mediante detección temprana de vulnerabilidades.
+### 📦 Generación de SBOMs
+- **Syft**: genera *Software Bill of Materials* (SBOM) en formato **CycloneDX JSON** para cada repositorio.
+- Permite trazabilidad de dependencias y facilita la integración con herramientas de gestión de vulnerabilidades (ej. Dependency-Track).
 
 ---
 
-## 🛠️ Herramientas integradas
+### 📂 Repositorios auditados
+Actualmente el pipeline integra los siguientes proyectos:
 
-- **Syft** – Generación de SBOMs.
-- **Dependency-Track** – Gestión y análisis de dependencias.
-- **Git** – Control de versiones y sincronización.
-- **Cron** – Automatización de tareas periódicas.
+- **Cyberseguridad** (este repo principal)
+- **FS-Backend** → [The-Bridge-Proyecto-Grupo-3/FS-Backend](https://github.com/The-Bridge-Proyecto-Grupo-3/FS-Backend)
+- **FS-Frontend** → [The-Bridge-Proyecto-Grupo-3/FS-Frontend](https://github.com/The-Bridge-Proyecto-Grupo-3/FS-Frontend)
+- **Data Science Group** → [The-Bridge-Proyecto-Grupo-3/data_science_group](https://github.com/The-Bridge-Proyecto-Grupo-3/data_science_group)
+
+Cada ejecución del workflow clona estos repos, ejecuta las auditorías y genera sus SBOMs.
+
+---
+
+### ⚙️ Automatización CI/CD
+- Workflow en **GitHub Actions**:
+  - Se ejecuta en cada `push` o `pull_request`.
+  - Corre auditorías (ESLint, Semgrep, Gitleaks).
+  - Genera SBOMs con Syft.
+  - Copia todos los informes a la carpeta [`sbom/`](./sbom).
+  - Realiza **commit automático** con `GITHUB_TOKEN` para mantener un histórico versionado.
+
+---
+
+### 📊 Integración con observabilidad
+- Los informes JSON se almacenan en el repo y pueden ser enviados a un servidor central:
+  - **Promtail** → ingesta de logs.
+  - **Loki** → almacenamiento y consultas.
+  - **Grafana** → dashboards y visualización de hallazgos.
+
+Esto permite tener un **panel centralizado de seguridad** con métricas en tiempo real.
+
+---
+
+## 📁 Estructura del repositorio
+
+Cyberseguridad/
+├── .github/
+│   └── workflows/
+│       └── auditoria.yml        # Workflow CI/CD con ESLint, Semgrep, Gitleaks y SBOMs
+│
+├── sbom/                        # Carpeta donde se guardan los informes versionados
+│   ├── eslint_cyber.json
+│   ├── semgrep_cyber.json
+│   ├── gitleaks_cyber.json
+│   ├── sbom_cyber.json
+│   ├── eslint_fs_backend.json
+│   ├── semgrep_fs_backend.json
+│   ├── gitleaks_fs_backend.json
+│   ├── sbom_fs_backend.json
+│   ├── eslint_fs_frontend.json
+│   ├── semgrep_fs_frontend.json
+│   ├── gitleaks_fs_frontend.json
+│   ├── sbom_fs_frontend.json
+│   ├── semgrep_data.json
+│   ├── gitleaks_data.json
+│   └── sbom_data.json
+│
+├── src/                         # Código fuente del proyecto principal (Cyberseguridad)
+│   ├── ...                      # Scripts, módulos, etc.
+│
+├── README.md                    # Documentación del proyecto
+└── package.json / requirements   # Dependencias del proyecto principal
+
+---
+
+## 📝 Ejemplo de informes generados
+- `sbom/eslint_cyber.json`
+- `sbom/semgrep_fs_backend.json`
+- `sbom/gitleaks_fs_frontend.json`
+- `sbom/sbom_data.json`
+
+---
+
+## ✅ Beneficios
+- **Automatización completa** de auditorías en múltiples repos.
+- **Versionado histórico** de informes para trazabilidad.
+- **Cobertura transversal**: calidad de código, seguridad, secretos y dependencias.
+- **Integración con observabilidad** para monitorizar riesgos en tiempo real.
+- **Cumplimiento normativo** alineado con ISO/IEC 27001, OWASP y buenas prácticas de seguridad.
+
+---
+
+## 🚀 Próximos pasos
+- Extender reglas personalizadas de Semgrep para casos específicos del grupo.
+- Integrar análisis de dependencias con **Trivy**.
+- Añadir dashboards preconfigurados en Grafana para cada tipo de informe.
 
