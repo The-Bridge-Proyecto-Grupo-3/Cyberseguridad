@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repo de ciberseguridad
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0   # necesario para poder hacer commit/push
 
       - name: Preparar carpetas
         run: mkdir -p auditoria/informes sbom
@@ -98,16 +100,32 @@ jobs:
       - name: SBOM Data
         run: syft data_science_group -o cyclonedx-json > auditoria/informes/sbom_data.json
 
-      # --- Guardar informes en carpeta sbom del repo ---
-      - name: Mover informes a carpeta sbom
-        run: cp auditoria/informes/*.json sbom/
-
-      - name: Commit y push de informes
+      # --- Conversión a NDJSON (excluyendo SBOMs) ---
+      - name: Convertir reportes JSON a NDJSON y guardarlos en sbom/
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add sbom/*.json
-          git commit -m "chore: añadir informes de auditoría en sbom [skip ci]" || echo "No hay cambios que commitear"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          for file in auditoria/informes/*.json; do
+            [ -e "$file" ] || continue
+            filename=$(basename "$file")
+            # Excluir los SBOMs de Syft
+            if [[ "$filename" == sbom_* ]]; then
+              echo "[INFO] Saltando $filename (SBOM de Syft, no se convierte)"
+              cp "$file" "sbom/$filename"
+              continue
+            fi
+            output="sbom/${filename%.json}.ndjson"
+            echo "[INFO] Procesando $filename → $output"
+            jq -c '.[]' "$file" > "$output" 2>/dev/null || cp "$file" "$output"
+          done
+
+      # --- Commit y push de NDJSON y SBOMs ---
+      - name: Commit NDJSON and SBOMs to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sbom/*
+          if git diff --cached --quiet; then
+            echo "No hay cambios en sbom/, no se hace commit."
+          else
+            git commit -m "chore: actualizar reportes NDJSON y SBOMs en sbom/"
+            git push
+          fi
