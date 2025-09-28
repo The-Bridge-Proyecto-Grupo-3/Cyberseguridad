@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   loki:
     image: grafana/loki:2.9.0
     container_name: loki
     ports:
-      - "3101:3100"   # Loki expuesto en el host en 3101
+      - "3101:3100"
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
@@ -14,8 +12,7 @@ services:
       - ./loki-data/chunks:/tmp/loki/chunks
       - ./loki-data/compactor:/tmp/loki/compactor
     networks:
-      observabilidad:
-        ipv4_address: 192.168.1.149
+      - observabilidad
 
   promtail:
     image: grafana/promtail:2.9.0
@@ -27,8 +24,7 @@ services:
     depends_on:
       - loki
     networks:
-      observabilidad:
-        ipv4_address: 192.168.1.150
+      - observabilidad
 
   grafana:
     image: grafana/grafana:10.2.0
@@ -43,8 +39,7 @@ services:
     depends_on:
       - loki
     networks:
-      observabilidad:
-        ipv4_address: 192.168.1.151
+      - observabilidad
 
 volumes:
   grafana_data:
@@ -52,6 +47,3 @@ volumes:
 networks:
   observabilidad:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 192.168.1.0/24
