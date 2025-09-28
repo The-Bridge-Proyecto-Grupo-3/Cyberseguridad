@@ -1,2 +1,18 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
 clients:
-  - url: http://192.168.1.149:3100/loki/api/v1/push
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: auditoria
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: auditoria
+          __path__: /var/log/auditoria/*.json
