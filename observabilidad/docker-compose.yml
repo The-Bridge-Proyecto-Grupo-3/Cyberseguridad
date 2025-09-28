@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   loki:
     image: grafana/loki:2.9.0
@@ -6,25 +8,24 @@ services:
       - "3101:3100"
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
-      - ./loki-config.yaml:/etc/loki/local-config.yaml
-      - ./loki-data/index:/tmp/loki/index
-      - ./loki-data/cache:/tmp/loki/cache
-      - ./loki-data/chunks:/tmp/loki/chunks
-      - ./loki-data/compactor:/tmp/loki/compactor
+      - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - ./loki-data:/loki   # volumen persistente único
     networks:
       - observabilidad
+    restart: unless-stopped
 
   promtail:
     image: grafana/promtail:2.9.0
     container_name: promtail
     volumes:
-      - ./promtail-config.yaml:/etc/promtail/config.yaml
+      - ./promtail-config.yaml:/etc/promtail/config.yaml:ro
       - /home/server/git/Cyberseguridad/sbom/:/var/log/auditoria:ro
     command: -config.file=/etc/promtail/config.yaml
     depends_on:
       - loki
     networks:
       - observabilidad
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:10.2.0
@@ -40,9 +41,11 @@ services:
       - loki
     networks:
       - observabilidad
+    restart: unless-stopped
 
 volumes:
   grafana_data:
+  loki-data:
 
 networks:
   observabilidad:
