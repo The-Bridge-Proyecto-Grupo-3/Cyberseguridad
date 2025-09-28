@@ -17,4 +17,10 @@ scrape_configs:
           job: auditoria
           __path__: /var/log/auditoria/sbom/*.ndjson
     pipeline_stages:
-      - json: {}   # 👈 así es como debe declararse
+      - json:
+          drop_malformed: true
+          expressions:
+            severity: severity
+            ruleId: ruleId
+            check_id: check_id
+            path: path
