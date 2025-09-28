@@ -18,7 +18,7 @@ ingester:
   chunk_retain_period: 30s
   wal:
     enabled: true
-    dir: /tmp/wal
+    dir: /loki/wal   # 👈 cambiado
 
 schema_config:
   configs:
@@ -32,14 +32,14 @@ schema_config:
 
 storage_config:
   boltdb_shipper:
-    active_index_directory: /tmp/loki/index
-    cache_location: /tmp/loki/cache
+    active_index_directory: /loki/index   # 👈 cambiado
+    cache_location: /loki/cache           # 👈 cambiado
     shared_store: filesystem
   filesystem:
-    directory: /tmp/loki/chunks
+    directory: /loki/chunks               # 👈 cambiado
 
 compactor:
-  working_directory: /tmp/loki/compactor
+  working_directory: /loki/compactor      # 👈 cambiado
   shared_store: filesystem
 
 limits_config:
