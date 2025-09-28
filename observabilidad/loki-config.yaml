@@ -38,6 +38,10 @@ storage_config:
   filesystem:
     directory: /tmp/loki/chunks
 
+compactor:
+  working_directory: /tmp/loki/compactor
+  shared_store: filesystem
+
 limits_config:
   ingestion_rate_mb: 4
   ingestion_burst_size_mb: 6

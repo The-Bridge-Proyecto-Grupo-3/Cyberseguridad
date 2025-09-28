@@ -9,6 +9,10 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - ./loki-data/index:/tmp/loki/index
+      - ./loki-data/cache:/tmp/loki/cache
+      - ./loki-data/chunks:/tmp/loki/chunks
+      - ./loki-data/compactor:/tmp/loki/compactor
     networks:
       observabilidad:
         ipv4_address: 192.168.1.149
