@@ -1,26 +1,129 @@
-name: Test Loki Cloud
+name: Auditoría Código (Semgrep + ESLint + Gitleaks)
 
 on:
-  workflow_dispatch:   # lo lanzas manualmente desde Actions
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+permissions:
+  contents: write   # necesario para poder hacer commit/push
 
 jobs:
-  send-log:
+  auditoria:
     runs-on: ubuntu-latest
     steps:
-      - name: Crear log de prueba
-        run: echo '{"msg":"Hola Erik, este es un log de prueba desde GitHub Actions"}' > output.ndjson
+      - name: Checkout repo de ciberseguridad
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Enviar log a Grafana Cloud Loki
+      - name: Preparar carpetas
+        run: mkdir -p auditoria/informes ndjson
+
+      # Dependencias Node (para ESLint)
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Instalar Semgrep
+      - name: Instalar Semgrep
+        run: pip install semgrep
+
+      # Instalar Gitleaks
+      - name: Instalar Gitleaks
         run: |
-          while read -r line; do
-            ts=$(date +%s%N)
-            # Convertimos la línea en string JSON seguro
-            log=$(echo "$line" | jq -Rs .)
-            payload=$(jq -c -n --arg ts "$ts" --argjson log "$log" \
-              '{streams: [{stream: {job:"auditoria", tool:"test", branch:"'${GITHUB_REF##*/}'"}, values:[[ $ts, $log ]]}]}')
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz -o gitleaks.tar.gz
+          tar -xvzf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/
+          gitleaks version
 
-            curl -u "${{ secrets.GRAFANA_USER }}:${{ secrets.GRAFANA_API_KEY }}" \
-              -H "Content-Type: application/json" \
-              -X POST "https://logs-prod-012.grafana.net/loki/api/v1/push" \
-              --data-raw "$payload"
-          done < output.ndjson
+      # --- Auditoría Cyberseguridad ---
+      - name: ESLint Cyberseguridad
+        run: npx eslint . --format json --output-file auditoria/informes/eslint_cyber.json || true
+
+      - name: Semgrep Cyberseguridad
+        run: semgrep --config auto --json > auditoria/informes/semgrep_cyber.json || true
+
+      - name: Gitleaks Cyberseguridad
+        run: gitleaks detect --source . --report-format json --report-path auditoria/informes/gitleaks_cyber.json --no-git || true
+
+      # --- FS-Backend ---
+      - name: Clonar FS-Backend
+        run: git clone https://github.com/The-Bridge-Proyecto-Grupo-3/FS-Backend.git
+
+      - name: ESLint FS-Backend
+        run: npx eslint FS-Backend --format json --output-file auditoria/informes/eslint_fs_backend.json || true
+
+      - name: Semgrep FS-Backend
+        run: semgrep --config auto FS-Backend --json > auditoria/informes/semgrep_fs_backend.json || true
+
+      - name: Gitleaks FS-Backend
+        run: gitleaks detect --source FS-Backend --report-format json --report-path auditoria/informes/gitleaks_fs_backend.json --no-git || true
+
+      # --- FS-Frontend ---
+      - name: Clonar FS-Frontend
+        run: git clone https://github.com/The-Bridge-Proyecto-Grupo-3/FS-Frontend.git
+
+      - name: ESLint FS-Frontend
+        run: npx eslint FS-Frontend --format json --output-file auditoria/informes/eslint_fs_frontend.json || true
+
+      - name: Semgrep FS-Frontend
+        run: semgrep --config auto FS-Frontend --json > auditoria/informes/semgrep_fs_frontend.json || true
+
+      - name: Gitleaks FS-Frontend
+        run: gitleaks detect --source FS-Frontend --report-format json --report-path auditoria/informes/gitleaks_fs_frontend.json --no-git || true
+
+      # --- Data Science ---
+      - name: Clonar Data Science
+        run: git clone https://github.com/The-Bridge-Proyecto-Grupo-3/data_science_group.git
+
+      - name: Semgrep Data
+        run: semgrep --config auto data_science_group --json > auditoria/informes/semgrep_data.json || true
+
+      - name: Gitleaks Data
+        run: gitleaks detect --source data_science_group --report-format json --report-path auditoria/informes/gitleaks_data.json --no-git || true
+
+      # --- Conversión a NDJSON ---
+      - name: Convertir reportes JSON a NDJSON
+        run: |
+          for file in auditoria/informes/*.json; do
+            [ -e "$file" ] || continue
+            filename=$(basename "$file")
+            output="ndjson/${filename%.json}.ndjson"
+            echo "[INFO] Procesando $filename → $output"
+            jq -c '.[]' "$file" > "$output" 2>/dev/null || jq -c '.' "$file" > "$output" 2>/dev/null || cp "$file" "$output"
+          done
+
+      # --- Enviar NDJSON a Grafana Cloud Loki ---
+      - name: Enviar NDJSON a Grafana Cloud
+        run: |
+          for file in ndjson/*.ndjson; do
+            [ -e "$file" ] || continue
+            tool=$(basename "$file" | cut -d'_' -f1)   # eslint, semgrep, gitleaks
+            repo=$(basename "$file" | cut -d'_' -f2)   # cyber, fs, data...
+            echo "[INFO] Subiendo $file (tool=$tool, repo=$repo)"
+            while read -r line; do
+              ts=$(date +%s%N)
+              log=$(echo "$line" | jq -Rs .)
+              payload=$(jq -c -n --arg ts "$ts" --argjson log "$log" \
+                --arg tool "$tool" --arg repo "$repo" \
+                '{streams: [{stream: {job:"auditoria", tool:$tool, repo:$repo, branch:"'${GITHUB_REF##*/}'"}, values:[[ $ts, $log ]]}]}')
+              curl -s -u "${{ secrets.GRAFANA_USER }}:${{ secrets.GRAFANA_API_KEY }}" \
+                -H "Content-Type: application/json" \
+                -X POST "https://logs-prod-012.grafana.net/loki/api/v1/push" \
+                --data-raw "$payload" > /dev/null
+            done < "$file"
+          done
+
+      # --- Commit y push de NDJSON ---
+      - name: Commit NDJSON to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ndjson/*
+          if git diff --cached --quiet; then
+            echo "No hay cambios en ndjson/, no se hace commit."
+          else
+            git commit -m "chore: actualizar reportes NDJSON en ndjson/"
+            git push
+          fi
