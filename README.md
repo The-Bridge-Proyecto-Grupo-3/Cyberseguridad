@@ -4,7 +4,8 @@ Este repositorio centraliza la **auditoría de código y generación de SBOMs** 
 El objetivo es disponer de un **pipeline CI/CD robusto** que garantice seguridad, cumplimiento normativo y visibilidad completa de riesgos.
 
 ---
-
+[
+](https://sdmntprnortheu.oaiusercontent.com/files/00000000-8290-61f4-a4d5-3d7de83558dd/raw?se=2025-09-29T11%3A55%3A45Z&sp=r&sv=2024-08-04&sr=b&scid=0ea1f70f-c31e-5c2b-86a8-256044567aac&skoid=82a3371f-2f6c-4f81-8a78-2701b362559b&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-09-28T13%3A13%3A43Z&ske=2025-09-29T13%3A13%3A43Z&sks=b&skv=2024-08-04&sig=kBOjO0bauBYgp5kEPFWtnn9a1NIG%2BkyWTkWZ%2BTn8oxI%3D)<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/a95ffc28-dc17-45ed-ab28-dcf52e73fc51" />
 ## 🚀 Funcionalidades principales
 
 ### 🔍 Auditorías de código
