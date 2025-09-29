@@ -111,12 +111,11 @@ Cyberseguridad/
 - Añadir dashboards preconfigurados en Grafana para cada tipo de informe.
 
 # Estructura detallada del servidor 
-https://copilot.microsoft.com/th/id/BCO.b4fad127-c773-4877-b718-1aabf06eab50.png<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/0a1ee981-a618-42ea-8174-f787ccb116e5" />
+<img width="1050" height="790" alt="image" src="https://github.com/user-attachments/assets/a69c6220-6162-4c49-8e53-c9dbed5b2778" />
 
 En el diagrama se muestra cómo:
-GitHub Actions genera los informes JSON (ESLint, Semgrep, Gitleaks, SBOMs).
-  Estos llegan al servidor de auditoría, donde Promtail los recoge.
-  Loki los almacena y Grafana los visualiza en dashboards.
+
+En el se despliega el contenedor de dependency-Track para funcionar de runner para github el proposito es hacer ejecuciones que no pueda hacer via cloud
 
 Todo el servidor está protegido por:
   NordVPN → capa de red segura y cifrada.
