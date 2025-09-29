@@ -4,7 +4,8 @@ Este repositorio centraliza la **auditoría de código y generación de SBOMs** 
 El objetivo es disponer de un **pipeline CI/CD robusto** que garantice seguridad, cumplimiento normativo y visibilidad completa de riesgos.
 
 ---
-<img width="1774" height="1156" alt="image" src="https://github.com/user-attachments/assets/c3582cd9-83e0-4378-8e41-f2cda1aa9e13" />
+<img width="1774" height="1156" alt="image" src="https://github.com/user-attachments/assets/88e779b0-31d1-464a-9721-db5fc0dd289c" />
+
 
 ## 🚀 Funcionalidades principales
 
